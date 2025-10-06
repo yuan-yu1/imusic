@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>iMusic 简易播放器</title>
+<style>
+body{display:flex;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif}
+#list{width:260px;border-right:1px solid #e0e0e0;padding:12px}
+#player{flex:1;padding:24px}
+#lyric-box{height:300px;overflow:auto;background:#fafafa;border:1px solid #e0e0e0;padding:12px;margin-top:12px}
+.active{color:#d63031;font-weight:bold}
+audio{width:100%}
+</style>
+</head>
+<body>
+  <div id="list"><h3>歌单</h3><ul id="songs"></ul></div>
+  <div id="player">
+    <h2 id="title">选一首歌开始</h2>
+    <audio id="audio" controls></audio>
+    <div id="lyric-box">歌词加载中…</div>
+  </div>
+
+<script>
+// 1. 拉歌单
+fetch('/api/playlists/1').then(r=>r.json()).then(pl=>{
+  const ul=document.getElementById('songs');
+  pl.tracks.forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=t.name;
+    li.style.cursor='pointer';
+    li.onclick=()=>play(t);
+    ul.appendChild(li);
+  });
+});
+
+// 2. 播放 + 拉歌词
+function play(track){
+  document.getElementById('title').textContent=track.name;
+  const audio=document.getElementById('audio');
+  audio.src=track.audio_url;
+  audio.play();
+  fetch(`/api/tracks/${track.id}/lyrics`).then(r=>r.json()).then(l=>{
+    document.getElementById('lyric-box').textContent=l.lrc_text||'暂无歌词';
+  });
+}
+</script>
+</body>
+</html>
